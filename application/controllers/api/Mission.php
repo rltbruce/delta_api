@@ -27,6 +27,7 @@ class Mission extends REST_Controller {
         $data = array();
         
         $idcl=$this->get('idcl');
+        $menu=$this->get('menu');
        
         if($idcl )
         {
@@ -77,6 +78,16 @@ class Mission extends REST_Controller {
         {
           //  $data = $this->DeboursManager->findAll();
             $data=array();
+        }
+        if($menu=="getallmission" )
+        {
+            
+            $tmp = $this->DeboursManager->findAll();
+                if ($tmp) {
+                    $data=$tmp;
+                }        
+
+
         }
         if (count($data)>0) {
             $this->response([
