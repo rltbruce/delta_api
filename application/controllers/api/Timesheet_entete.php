@@ -11,7 +11,14 @@ class Timesheet_entete extends REST_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->model('timesheet_entete_model', 'Timesheet_enteteManager');
+        $this->load->model('timesheet_detail_model', 'Timesheet_detailManager');
+        $this->load->model('soussection_model', 'SoussectionManager');
+        $this->load->model('mission_model', 'MissionManager');
+        $this->load->model('client_model', 'ClientManager');
+        $this->load->model('section_model', 'SectionManager');
         $this->load->model('personnel_model', 'PersonnelManager');
+        $this->load->model('conge_model', 'CongeManager');
+        $this->load->model('absence_model', 'AbsenceManager');
         header('Access-Control-Allow-Origin: *');
         header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
@@ -29,6 +36,8 @@ class Timesheet_entete extends REST_Controller {
         $id_personnel = $this->get('id_personnel');
         $date_debut_semaine = $this->get('date_debut_semaine');
         $date_fin_semaine = $this->get('date_fin_semaine');
+        $date_debut = $this->get('date_debut');
+        $date_fin = $this->get('date_fin');
         $data = array();
         if ($menu=="get_personel")
         {
@@ -84,7 +93,116 @@ class Timesheet_entete extends REST_Controller {
                         }
             }
         }
-    
+        if ($menu=="getfeuilletempsbydate_debu_fin") 
+        {
+            
+            $tmp = $this->Timesheet_enteteManager->getfeuilletempsbydate_debu_fin($date_debut,$date_fin,$id_personnel);
+            if ($tmp) 
+            {
+                $data=$tmp;
+            }
+        }
+        if ($menu=="gettimesheet_entetebydate_personnel") 
+        {
+            
+            $tmp = $this->Timesheet_enteteManager->gettimesheet_entetebydate_personnel($date_debut_semaine,$date_fin_semaine,$id_personnel);
+            if ($tmp) 
+            {
+                foreach ($tmp as $key => $value)
+                {
+                   // $personnel = $this->PersonnelManager->findById($value->id_pers);
+                    $data[$key]['id'] = $value->id;
+                    $data[$key]['date_feuille'] = $value->date_feuille;
+                    $data[$key]['date_debut'] = $value->date_debut;
+                    $data[$key]['date_fin'] = $value->date_fin;
+                    $data[$key]['type'] = $value->type;
+                   // $data[$key]['personnel'] = $personnel;
+                }
+            }
+        }
+        
+        if ($menu=="gettimesheet_entetebydate_personnel_detail") 
+        {
+            
+            $tmp = $this->Timesheet_enteteManager->gettimesheet_entetebydate_personnel($date_debut_semaine,$date_fin_semaine,$id_personnel);
+            if ($tmp) 
+            {
+                foreach ($tmp as $key => $value)
+                {
+                   // $personnel = $this->PersonnelManager->findById($value->id_pers);
+                    $data[$value->date_feuille]['id'] = $value->id;
+                    $data[$value->date_feuille]['type'] = $value->type;
+                    if ($value->type=='timesheet') {
+                        $tmp_time = $this->Timesheet_detailManager->findAll_by_entete($value->id,$id_personnel);
+                        if ($tmp_time) 
+                        {
+                            foreach ($tmp_time as $key2 => $value_time)
+                            {
+                                $sous_section = $this->SoussectionManager->findById($value_time->id_sous_section);
+                                $mission = $this->MissionManager->findById($value_time->id_mission);
+                                $client = $this->ClientManager->findById($value_time->id_client);
+                                $section = $this->SectionManager->findById($value_time->id_section);
+                                $data[$value->date_feuille]['timesheet'][$key2]['pourcentage'] = $value_time->pourcentage;
+                                $data[$value->date_feuille]['timesheet'][$key2]['duree'] = $value_time->duree;
+                                $data[$value->date_feuille]['timesheet'][$key2]['duree_cumule'] = $value_time->duree_cumule;
+                                $data[$value->date_feuille]['timesheet'][$key2]['sous_section'] = $sous_section;
+                                $data[$value->date_feuille]['timesheet'][$key2]['mission'] = $mission;
+                                $data[$value->date_feuille]['timesheet'][$key2]['client'] = $client;
+                                $data[$value->date_feuille]['timesheet'][$key2]['section'] = $section;
+                            }
+                        }
+                        else
+                        {
+                            $data[$value->date_feuille]['timesheet']=array();
+                        }
+                    }
+                    if ($value->type=='conge')
+                    {
+                        $tmp_cong = $this->CongeManager->getcongebyid($value->id);
+                        if ($tmp_cong) 
+                        {
+                            foreach ($tmp_cong as $key_cong => $value_cong)
+                            {
+                                $data[$value->date_feuille]['conge'][$key_cong]['id'] = $value_cong->id;
+                                $data[$value->date_feuille]['conge'][$key_cong]['motif'] = $value_cong->motif;
+                                $data[$value->date_feuille]['conge'][$key_cong]['date_debut'] = $value_cong->date_debut;
+                                $data[$value->date_feuille]['conge'][$key_cong]['date_fin'] = $value_cong->date_fin;
+                                $data[$value->date_feuille]['conge'][$key_cong]['validation'] = $value_cong->validation;
+                                $data[$value->date_feuille]['conge'][$key_cong]['date_retour'] = $value_cong->date_retour ;
+                                $data[$value->date_feuille]['conge'][$key_cong]['reste_conge'] = intval($value_cong->reste_conge) ;
+                            }
+                        }
+                        else
+                        {
+                            $data[$value->date_feuille]['conge']=array();
+                        }
+                    }
+                    if ($value->type=='absence') 
+                    {
+                        $tmp_absence = $this->AbsenceManager->getabsencebyid($value->id);
+                        if ($tmp_absence) 
+                        {
+                            foreach ($tmp_absence as $key_absence => $value_absence)
+                            {
+                                $data[$value->date_feuille]['absence'][$key_absence]['id'] = $value_absence->id;
+                                $data[$value->date_feuille]['absence'][$key_absence]['type'] = intval($value_absence->type) ;
+                                $data[$value->date_feuille]['absence'][$key_absence]['motif'] = $value_absence->motif;
+                                $data[$value->date_feuille]['absence'][$key_absence]['date_debut'] = $value_absence->date_debut;
+                                $data[$value->date_feuille]['absence'][$key_absence]['date_fin'] = $value_absence->date_fin;
+                                $data[$value->date_feuille]['absence'][$key_absence]['duree'] = $value_absence->duree;
+                                $data[$value->date_feuille]['absence'][$key_absence]['validation'] = $value_absence->validation;
+                            }
+                        }
+                        else
+                        {
+                            $data[$value->date_feuille]['anbsence']=array();
+                        }
+                    } 
+                    
+                   // $data[$key]['personnel'] = $personnel;
+                }
+            }
+        }
         
         if (count($data)>0) {
             $this->response([

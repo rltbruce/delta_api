@@ -107,5 +107,22 @@ class Mission_model extends CI_Model
 
 
     }
+    
+    public function getmissionbyclient($id_client)
+    {
+        $requete="select mis.* FROM mission as mis"
+          ." inner join contrat as cont on cont.id=mis.id_contrat"
+          ." inner join client as cli on cli.id=cont.id_client"
+          ." where cli.id=".$id_client;          
+         
+          $query= $this->db->query($requete);
+          if( $query)
+          {
+          return $query->result();
+          }else
+          {
+              return null;
+          }
+    }
 
 }

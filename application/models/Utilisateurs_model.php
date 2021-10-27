@@ -119,6 +119,7 @@ class Utilisateurs_model extends CI_Model
             'email'                 =>      $utilisateurs['email'],
             'enabled'               =>      $utilisateurs['enabled'],
             'roles'                 =>      $utilisateurs['roles'],
+            'id_pers'                 =>      $utilisateurs['id_pers'],
         );
     }
 

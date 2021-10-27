@@ -12,6 +12,7 @@ class Utilisateurs extends REST_Controller {
         $this->load->model('utilisateurs_model', 'UserManager');
 
         $this->load->model('region_model', 'RegionManager');
+        $this->load->model('personnel_model', 'PersonnelManager');
 
         header('Access-Control-Allow-Origin: *');
         header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
@@ -63,7 +64,7 @@ class Utilisateurs extends REST_Controller {
                 $data['token'] = $user->token;
                 $data['email'] = $user->email;
                 $data['enabled'] = $user->enabled;
-             //   $data['id_region'] = $user->id_region;
+                $data['id_pers'] = $user->id_pers;
       
                 $data['roles'] = unserialize($user->roles);
             }
@@ -102,6 +103,9 @@ class Utilisateurs extends REST_Controller {
                             $data[$key]['token'] = $value->token;
                             $data[$key]['email'] = $value->email;
                             $data[$key]['enabled'] = $value->enabled;
+                            $data[$key]['id_pers'] = $value->id_pers;
+                            $personnel = $this->PersonnelManager->findById($value->id_pers);
+                            $data[$key]['personnel'] = $personnel;
                             //$id_region = $value->id_region;
                     
                             //$region = $this->RegionManager->findById($id_region);
@@ -147,6 +151,7 @@ class Utilisateurs extends REST_Controller {
                 $data['token'] = $value[0]->token;
                 $data['email'] = $value[0]->email;
                 $data['enabled'] = $value[0]->enabled;
+                $data['id_pers'] = $value[0]->id_pers;
          
                 $data['roles'] = unserialize($value[0]->roles);
 
