@@ -10,8 +10,7 @@ class Utilisateurs extends REST_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->model('utilisateurs_model', 'UserManager');
-
-        $this->load->model('region_model', 'RegionManager');
+        $this->load->model('Personnel_model', 'PersonnelManager');
 
         header('Access-Control-Allow-Origin: *');
         header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
@@ -87,39 +86,40 @@ class Utilisateurs extends REST_Controller {
         {
             if (isset($header['Authorization'])) 
             {
-                $usr_token = $this->UserManager->findBytoken($header['Authorization']);
+                /*$usr_token = $this->UserManager->findBytoken($header['Authorization']);
                 if (count($usr_token) > 0 && $usr_token) 
-                {
+                {*/
                     $usr = $this->UserManager->findAll();
                     if ($usr)
                     {
                         foreach ($usr as $key => $value) 
                         {
+                            $personnel = array();
+                            $personnel = $this->PersonnelManager->findById($value->id_pers); //id_pers = champ BDD
+                            $data[$key]['personnel'] = $personnel; 
                             $data[$key]['id'] = $value->id;
-                            $data[$key]['nom'] = $value->nom;
+                            $data[$key]['anarana'] = $value->nom; // anarana => alefa am angular
                             $data[$key]['prenom'] = $value->prenom;
-                        //   $data[$key]['sigle'] = $value->sigle;
+                            $data[$key]['sigle'] = $value->sigle;
                             $data[$key]['token'] = $value->token;
                             $data[$key]['email'] = $value->email;
-                            $data[$key]['enabled'] = $value->enabled;
-                            //$id_region = $value->id_region;
-                    
-                            //$region = $this->RegionManager->findById($id_region);
-                          //  $data[$key]['region'] = $region->nom;
+                            $data[$key]['enabled'] = intVal($value->enabled);
+                            $data[$key]['date_creation'] = $value->date_creation;
+                            $data[$key]['date_modification'] = $value->date_modification;
                             $data[$key]['roles'] = unserialize($value->roles);
-
-
+                                                    
+                           
                         }
                     }
                     else
                     {
                         $data = array();
                     }
-                }
+                /*}
                 else 
                 {
                     $data = array();
-                }
+                }*/
             }
             else 
             {
@@ -146,12 +146,8 @@ class Utilisateurs extends REST_Controller {
            //     $data['sigle'] = $value[0]->sigle;
                 $data['token'] = $value[0]->token;
                 $data['email'] = $value[0]->email;
-                $data['enabled'] = $value[0]->enabled;
-         
-                $data['roles'] = unserialize($value[0]->roles);
-
-                
-
+                $data['enabled'] = $value[0]->enabled;         
+                $data['roles'] = unserialize($value[0]->roles);             
             }else{
                 $data = array();
             }
@@ -215,14 +211,18 @@ class Utilisateurs extends REST_Controller {
 
             if ($supprimer == 0) 
             {
-                $getrole = $this->post('roles');
+                $getrole = json_decode($this->post('roles'));
                 $data = array(
                     'nom' => $this->post('nom'),
                     'prenom' => $this->post('prenom'),         
-                 //   'sigle' => $this->post('sigle'),
-                    'email' => $this->post('email'),                 
+                   'sigle' => $this->post('sigle'),
+                    'email' => $this->post('email'),     
+                    'id_pers' => $this->post('personnel'), 
+                    'date_creation' => $this->post('date_creation'),                 
+                    //'date_modification' => $this->post('date_modification'),   
                     'enabled' => $this->post('enabled'),
-                    'roles' => serialize($getrole)
+                    'roles' => serialize($getrole),
+                   // 'roles' => $getrole
                   
                 );
 
@@ -254,6 +254,27 @@ class Utilisateurs extends REST_Controller {
             }
             else
             {
+                if (!$id) {
+                $this->response([
+                    'status' => FALSE,
+                    'response' => 0,
+                    'message' => 'No request found'
+                        ], REST_Controller::HTTP_BAD_REQUEST);
+            }
+            $delete = $this->UserManager->delete($id);         
+            if (!is_null($delete)) {
+                $this->response([
+                    'status' => TRUE,
+                    'response' => 1,
+                    'message' => "Delete data success"
+                        ], REST_Controller::HTTP_OK);
+            } else {
+                $this->response([
+                    'status' => FALSE,
+                    'response' => 0,
+                    'message' => 'No request found'
+                        ], REST_Controller::HTTP_OK);
+            }
                     //si suppression
             }
             
@@ -293,40 +314,70 @@ class Utilisateurs extends REST_Controller {
                 }
             }
             else 
-            {
-                $getrole = array("USER");
-                $data = array(
-                    'nom' => $this->post('nom'),
-                    'prenom' => $this->post('prenom'),
-                    'sigle' => $this->post('sigle'),
-                    'email' => $this->post('email'),
-                  //  'id_region' => $this->post('id_region'),
-                  //  'id_district' => $this->post('id_district'),
-                    'password' => sha1($this->post('password')),
-                    'enabled' => 0,
-                    'token' => bin2hex(openssl_random_pseudo_bytes(32)),
-                    'roles' => serialize($getrole)
-                );
+            {//if menu = changer mot de passe zay vo mande reto
+                $majmdp = $this->post('majmdp');
+                if($majmdp==1){
+                    $data = array(
+                        'password' => sha1($this->post('password')),
+                    );
+                    
+                    if (!$data) {
+                        $this->response([
+                            'status' => FALSE,
+                            'response' => 0,
+                            'message' => 'No request found'
+                                ], REST_Controller::HTTP_OK);
+                    }
+    
+                    $majmdp = $this->UserManager->majmdp($data,$this->post('id'));
 
-                if (!$data) {
-                    $this->response([
-                        'status' => FALSE,
-                        'response' => 0,
-                        'message' => 'No request found'
-                            ], REST_Controller::HTTP_OK);
-                }
+                    if (!is_null($majmdp)) {
+                        $this->response([
+                            'status' => TRUE,
+                            'response' => $majmdp
+                                ], REST_Controller::HTTP_OK);
+                    } else {
+                        $this->response([
+                            'status' => FALSE,
+                            'message' => 'No request found'
+                                ], REST_Controller::HTTP_OK);
+                    }
+                }else{
 
-                $dataId = $this->UserManager->add($data);
-                if (!is_null($dataId)) {
-                    $this->response([
-                        'status' => TRUE,
-                        'response' => $dataId
-                            ], REST_Controller::HTTP_OK);
-                } else {
-                    $this->response([
-                        'status' => FALSE,
-                        'message' => 'No request found'
-                            ], REST_Controller::HTTP_OK);
+                    $getrole = array("USER");
+                    $data = array(
+                        'nom' => $this->post('nom'),
+                        'prenom' => $this->post('prenom'),
+                        'sigle' => $this->post('sigle'),
+                        'email' => $this->post('email'),
+                      //  'id_region' => $this->post('id_region'),
+                      //  'id_district' => $this->post('id_district'),
+                        'password' => sha1($this->post('password')),
+                        'enabled' => 0,
+                        'token' => bin2hex(openssl_random_pseudo_bytes(32)),
+                        'roles' => serialize($getrole)
+                    );
+    
+                    if (!$data) {
+                        $this->response([
+                            'status' => FALSE,
+                            'response' => 0,
+                            'message' => 'No request found'
+                                ], REST_Controller::HTTP_OK);
+                    }
+    
+                    $dataId = $this->UserManager->add($data);
+                    if (!is_null($dataId)) {
+                        $this->response([
+                            'status' => TRUE,
+                            'response' => $dataId
+                                ], REST_Controller::HTTP_OK);
+                    } else {
+                        $this->response([
+                            'status' => FALSE,
+                            'message' => 'No request found'
+                                ], REST_Controller::HTTP_OK);
+                    }
                 }
             }
            

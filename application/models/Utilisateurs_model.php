@@ -23,7 +23,7 @@ class Utilisateurs_model extends CI_Model
     public function update($id, $utilisateurs)
     {
         $this->db->set($this->_setGestionUtilisateur($utilisateurs))
-                 //->set('date_modification', 'NOW()', false)
+                 ->set('date_modification', 'NOW()', false)
                  ->where('id', (int) $id)
                  ->update($this->table);
         if($this->db->affected_rows() === 1)
@@ -32,6 +32,26 @@ class Utilisateurs_model extends CI_Model
         }else{
             return null;
         }                      
+    }
+
+    public function majmdp($utilisateurs,$id)
+    {
+        $this->db->set($this->_setmdp($utilisateurs))
+                 ->where('id', (int) $id)
+                 ->update($this->table);
+        if($this->db->affected_rows() === 1)
+        {
+            return true;
+        }else{
+            return null;
+        }                      
+    }
+    
+    public function _setmdp($utilisateurs){
+        return array(
+        
+            'password'              =>      $utilisateurs['password']
+        );
     }
 
     public function update2($courriel,$token)
@@ -117,8 +137,12 @@ class Utilisateurs_model extends CI_Model
             'nom'                   =>      $utilisateurs['nom'],
             'prenom'                =>      $utilisateurs['prenom'],
             'email'                 =>      $utilisateurs['email'],
-            'enabled'               =>      $utilisateurs['enabled'],
+            'enabled'               =>      $utilisateurs['enabled'],            
+            'id_pers'                 =>      $utilisateurs['id_pers'],
+            'date_creation'                 =>      $utilisateurs['date_creation'],
+            //'date_modification'                 =>      $utilisateurs['date_modification'],
             'roles'                 =>      $utilisateurs['roles'],
+            
         );
     }
 

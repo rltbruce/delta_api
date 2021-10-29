@@ -32,7 +32,7 @@ class Personnel extends REST_Controller {
 			$data['nom'] = $debours->nom;
             $data['grade'] = $debours->grade;
             $data['telephone'] = $debours->telephone;
-            $data['libgrade']=$grade.libelle;
+            $data['libgrade']=$grade->libelle;
 		
 		} else{
                 $menu = $this->DeboursManager->findAll();
