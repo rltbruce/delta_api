@@ -11,6 +11,7 @@ class Mission extends REST_Controller {
         parent::__construct();
         $this->load->model('mission_model', 'DeboursManager');
         $this->load->model('mission_model', 'MissionManager');
+        $this->load->model('personnel_model', 'PersonnelManager');
         header('Access-Control-Allow-Origin: *');
         header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
@@ -20,6 +21,22 @@ class Mission extends REST_Controller {
         }
       //  $this->load->model('typeindicateur_model', 'Type_indicateurManager');
     }
+    public function convertDateAngular($daty){
+		if(isset($daty) && $daty != ""){
+			if(strlen($daty) >33) {
+				$daty=substr($daty,0,33);
+			}
+			$xx  = new DateTime($daty);
+			if($xx->getTimezone()->getName() == "Z"){
+				$xx->add(new DateInterval("P1D"));
+				return $xx->format("Y-m-d");
+			}else{
+				return $xx->format("Y-m-d");
+			}
+		}else{
+			return null;
+		}
+	}
     public function index_get() {
         $id = $this->get('id');
 		//$typeindicateur_id=$this->get('typeindicateur_id');
@@ -27,33 +44,26 @@ class Mission extends REST_Controller {
         $data = array();
         
         $idcl=$this->get('idcl');
-        $menu=$this->get('menu');
+
+        $idparam=$this->get('parametre');
+        $menu=$this->get('menu');        
+        $id_client=$this->get('id_client');
+
        
         if($idcl )
         {
             
-            $menu = $this->DeboursManager->findAllByClient($idcl);
+            $menu = $this->DeboursManager->findAllByClient($idcl,$idparam);
                 if ($menu) {
                     foreach ($menu as $key => $value) {
                        
                         $data[$key]['id'] = $value->id;
-                        $data[$key]['num_contrat'] = $value->num_contrat;
-                        $data[$key]['date_contrat'] = $value->date_contrat;
-                        $data[$key]['montant_ht'] = $value->montant_ht;
-                        $data[$key]['id_client'] = $value->id_client;
-                       /* $mission = $this->MissionManager->findAllByClient($value->id);
-                        if($mission)
-                        {
-                        $data[$key]['mission']=$mission;
-                        }else
-                        {
-                            $data[$key]['mission']=array();
-                        }*/
-
-
-                        //Mission
-
-                        //fin mission
+                        $data[$key]['code'] = $value->code;
+                        $data[$key]['libelle'] = $value->libelle;
+                        $data[$key]['associe_resp'] = $value->associe_resp;
+                        $data[$key]['senior_manager'] = $value->senior_manager;
+                        $data[$key]['chef_mission'] = $value->chef_mission;
+                        $data[$key]['nom_client'] = $value->nom_client;
 
                     }
                 }        
@@ -66,10 +76,11 @@ class Mission extends REST_Controller {
 			$debours = $this->DeboursManager->findById($id);
 			//$type_indicateur = $this->Type_indicateurManager->findById($indicateur->type_indicateur_id);
             $data[$key]['id'] = $value->id;
-            $data[$key]['num_contrat'] = $value->num_contrat;
-            $data[$key]['date_contrat'] = $value->date_contrat;
-            $data[$key]['montant_ht'] = $value->montant_ht;
-            $data[$key]['id_client'] = $value->id_client;
+            $data[$key]['code'] = $value->code;
+            $data[$key]['libelle'] = $value->libelle;
+            $data[$key]['associe_resp'] = $value->associe_resp;
+            $data[$key]['senior_manager'] = $value->senior_manager;
+            $data[$key]['chef_mission'] = $value->chef_mission;
            
 		
         } 
@@ -85,9 +96,28 @@ class Mission extends REST_Controller {
             $tmp = $this->DeboursManager->findAll();
                 if ($tmp) {
                     $data=$tmp;
-                }        
+                } 
 
+        }
+        
+        if($menu=="getmissionbyclient" )
+        {
+            
+            $tmp = $this->MissionManager->getmissionbyclient($id_client);
+            if ($tmp)
+            {                
+                foreach ($tmp as $key => $value) {
+                       
+                    $data[$key]['id'] = $value->id;
+                    $data[$key]['code'] = $value->code;
+                    $data[$key]['libelle'] = $value->libelle;
+                    $data[$key]['associe_resp'] = $value->associe_resp;
+                    $data[$key]['senior_manager'] = $value->senior_manager;
+                    $chef_mission = $this->PersonnelManager->findById($value->chef_mission);
+                    $data[$key]['chef_mission'] = $chef_mission;
 
+                }
+            } 
         }
         if (count($data)>0) {
             $this->response([
@@ -107,17 +137,22 @@ class Mission extends REST_Controller {
         $id = $this->post('id') ;
        
         $supprimer = $this->post('supprimer') ;
-      
+        $datedeb = $this->convertDateAngular($this->post('date_deb_prevue'));
+        $datefin = $this->convertDateAngular($this->post('date_fin_prevue'));
         if ($supprimer == 0) {
             if ($id == 0) {
                 $data = array(
                     'code' => $this->post('code'),
                     'libelle' => $this->post('libelle'),
                     'associe_resp' => $this->post('associe_resp'),
+                    'associate_director' => $this->post('associate_director'),
+                    'director' => $this->post('director'),
                     'senior_manager' => $this->post('senior_manager'),
                     'chef_mission' => $this->post('chef_mission'),
                     'produit' => $this->post('produit'),
-                    'id_contrat' => $this->post('id_contrat')
+                    'id_contrat' => $this->post('id_contrat'),
+                    'date_deb_prevue' => $datedeb,
+                    'date_fin_prevue' => $datefin
                 
                   
                 );
@@ -148,10 +183,15 @@ class Mission extends REST_Controller {
                     'code' => $this->post('code'),
                     'libelle' => $this->post('libelle'),
                     'associe_resp' => $this->post('associe_resp'),
+                    'associate_director' => $this->post('associate_director'),
+                    'director' => $this->post('director'),
                     'senior_manager' => $this->post('senior_manager'),
                     'chef_mission' => $this->post('chef_mission'),
                     'produit' => $this->post('produit'),
-                    'id_contrat' => $this->post('id_contrat')
+                    'id_contrat' => $this->post('id_contrat'),
+                    'date_deb_prevue' => $datedeb,
+                    'date_fin_prevue' => $datefin
+                
                 
                 
                    

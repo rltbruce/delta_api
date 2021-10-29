@@ -142,7 +142,10 @@ class Utilisateurs_model extends CI_Model
             'date_creation'                 =>      $utilisateurs['date_creation'],
             //'date_modification'                 =>      $utilisateurs['date_modification'],
             'roles'                 =>      $utilisateurs['roles'],
-            
+
+
+
+
         );
     }
 

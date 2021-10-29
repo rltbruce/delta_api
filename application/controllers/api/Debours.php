@@ -19,6 +19,7 @@ class Debours extends REST_Controller {
         }
       //  $this->load->model('typeindicateur_model', 'Type_indicateurManager');
     }
+    //Andrana mise a jour smartgit
     public function index_get() {
         $id = $this->get('id');
 		//$typeindicateur_id=$this->get('typeindicateur_id');

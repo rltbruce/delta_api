@@ -5,11 +5,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 // afaka fafana refa ts ilaina
 require APPPATH . '/libraries/REST_Controller.php';
 
-class Prevhonoraire extends REST_Controller {
+class Prevdebours extends REST_Controller {
 
     public function __construct() {
         parent::__construct();
-        $this->load->model('prevhonoraire_model', 'DeboursManager');
+        $this->load->model('prevdebours_model', 'DeboursManager');
         header('Access-Control-Allow-Origin: *');
         header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
@@ -17,7 +17,7 @@ class Prevhonoraire extends REST_Controller {
         if ($method == "OPTIONS") {
             die();
         }
-        $this->load->model('grade_model', 'GradeManager');
+        $this->load->model('debours_model', 'DebManager');
     }
     public function index_get() {
         $id = $this->get('id');
@@ -29,10 +29,10 @@ class Prevhonoraire extends REST_Controller {
 			$debours = $this->DeboursManager->findById($id);
 			$grade = $this->GradeManager->findById($debours->grade);
 			$data['id'] = $debours->id;
-			$data['nbre_jour'] = $debours->nbre_jour;
-			$data['nbre_heure'] = $debours->nbre_heure;
-            $data['grade'] = $debours->grade;
-            $data['nbre_homme'] = $debours->nbre_homme;
+			$data['nbre_jours'] = $debours->nbre_jours;
+			$data['id_debours'] = $debours->id_debours;
+            $data['id_mission'] = $debours->id_mission;
+            $data['pu'] = $debours->pu;
            // $data['libgrade']=$grade.libelle;
 		
 		} else{
@@ -41,16 +41,15 @@ class Prevhonoraire extends REST_Controller {
                 if ($menu) {
                     foreach ($menu as $key => $value) {
                                              
-                        $grade = $this->GradeManager->findById($value->grade);
+                        $deb = $this->DebManager->findById($value->id_debours);
                         $data[$key]['id'] = $value->id;
-                        $data[$key]['nbre_jour'] = $value->nbre_jour;
-                        $data[$key]['nbre_heure'] = $value->nbre_heure;
-                        $data[$key]['grade'] = $value->grade;
-                        $data[$key]['nbre_homme'] = $value->nbre_homme;
+                        $data[$key]['nbre_jours'] = $value->nbre_jours;
+                        $data[$key]['id_debours'] = $value->id_debours;
                         $data[$key]['pu'] = $value->pu;
                         $data[$key]['id_mission'] = $value->id_mission;
+                        $data[$key]['libdebours'] = $deb->libelle;
                         $data[$key]['edit'] = false;
-                        $data[$key]['libgrade']=$grade->libelle;
+                       
                     }
                 }        
 
@@ -76,12 +75,11 @@ class Prevhonoraire extends REST_Controller {
         if ($supprimer == 0) {
             if ($id == 0) {
                 $data = array(
-                    'nbre_jour' => $this->post('nbre_jour'),
-                    'nbre_homme' => $this->post('nbre_homme'),
-                    'nbre_heure' => $this->post('nbre_heure'),
-                    'grade' => $this->post('grade'),
+                    'nbre_jours' => $this->post('nbre_jours'),
+                    'id_debours' => $this->post('id_debours'),
+                    'pu' => intval($this->post('pu')),
                     'id_mission' => $this->post('id_mission'),
-                    'pu' => $this->post('pu')
+                   
                   
                 );
                 if (!$data) {
@@ -108,13 +106,11 @@ class Prevhonoraire extends REST_Controller {
             } else {
                 
                 $data = array(
-                    'nbre_jour' => $this->post('nbre_jour'),
-                    'nbre_homme' => $this->post('nbre_homme'),
-                    'nbre_heure' => $this->post('nbre_heure'),
-                    'grade' => $this->post('grade'),
+                    'nbre_jours' => $this->post('nbre_jours'),
+                    'id_debours' => $this->post('id_debours'),
+                    'pu' => intval($this->post('pu')),
                     'id_mission' => $this->post('id_mission'),
-                    'pu' => intval($this->post('pu'))
-                  
+                   
 
                 );
                 if (!$data || !$id) {

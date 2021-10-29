@@ -37,6 +37,10 @@ class Mission_model extends CI_Model
             'code'                  =>      $client['code'],
             'libelle'               =>      $client['libelle'],
             'associe_resp'               =>      $client['associe_resp'],
+            'associate_director'               =>      $client['associate_director'],
+            'director'               =>      $client['director'],
+            'date_deb_prevue'               =>      $client['date_deb_prevue'],
+            'date_fin_prevue'               =>      $client['date_fin_prevue'],
             'senior_manager'               =>      $client['senior_manager'],
             'chef_mission'               =>      $client['chef_mission'],
             'produit'               =>      $client['produit'],
@@ -83,15 +87,47 @@ class Mission_model extends CI_Model
         return null;
     }
 
-    public function findAllByClient($id_contrat)
+    public function findAllByClient($id_contrat,$param)
     {
               
-        
-        $requete="SELECT m.id,m.code as code,m.libelle,m.associe_resp,m.senior_manager,m.chef_mission,m.produit  FROM "
-          ."mission as m,contrat as c "
-          ." where c.id=m.id_contrat "
+        if($param='contrat')
+        {
+        $requete="SELECT m.id,m.code as code,m.libelle,m.associe_resp,m.senior_manager,m.chef_mission,m.produit,cl.nom_client "
+        .",m.associate_director,m.director,m.date_deb_prevue,m.date_fin_prevue FROM "
+        ."mission as m,contrat as c,client as cl "
+          ." where c.id=m.id_contrat and cl.id=c.id_client "
           ." and c.id=".$id_contrat;
-          
+        } 
+        if($param='client')
+        {
+        $requete="SELECT m.id,m.code as code,m.libelle,m.associe_resp,m.senior_manager,m.chef_mission,m.produit,cl.nom_client  "
+        .",m.associate_director,m.director,m.date_deb_prevue,m.date_fin_prevue FROM "
+          ."mission as m,contrat as c,client as cl "
+          ." where c.id=m.id_contrat and cl.id=c.id_client "
+          ." and cl.id=".$id_contrat;
+        } 
+         
+          $query= $this->db->query($requete);
+          if( $query)
+          {
+          return $query->result();
+          }else
+          {
+              return array();
+          }
+
+
+
+
+
+    }
+    
+    public function getmissionbyclient($id_client)
+    {
+        $requete="select mis.* FROM mission as mis"
+          ." inner join contrat as cont on cont.id=mis.id_contrat"
+          ." inner join client as cli on cli.id=cont.id_client"
+          ." where cli.id=".$id_client;          
          
           $query= $this->db->query($requete);
           if( $query)
@@ -101,11 +137,6 @@ class Mission_model extends CI_Model
           {
               return null;
           }
-
-
-
-
-
     }
 
 }
