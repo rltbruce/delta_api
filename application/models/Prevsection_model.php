@@ -1,8 +1,8 @@
 <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Contrat_model extends CI_Model
+class Prevsection_model extends CI_Model
 {
-    protected $table = 'contrat';
+    protected $table = 'prev_tache';
 
 
     public function add($client)
@@ -34,14 +34,11 @@ class Contrat_model extends CI_Model
     public function _set($client)
     {
         return array(
-            'num_contrat'                  =>      $client['num_contrat'],
-            'date_contrat'               =>      $client['date_contrat'],
-            'id_client'               =>      $client['id_client'],
-            'montant_ht'               =>      $client['montant_ht'],
-            'monnaie'               =>      $client['monnaie'],
-            'libelle'               =>      $client['libelle'],           
-            'date_debut'               =>      $client['date_debut'],           
-            'date_fin'               =>      $client['date_fin'],                      
+            'grand_tache'                  =>      $client['grand_tache'],
+            'nbre_heure'               =>      $client['nbre_heure'],
+            'id_mission'               =>      $client['id_mission'],
+          
+
         );
     }
 
@@ -61,24 +58,7 @@ class Contrat_model extends CI_Model
     {
         $result =  $this->db->select('*')
                         ->from($this->table)
-                        ->order_by('num_contrat', 'asc')
-                        ->get()
-                        ->result();
-        if($result)
-        {
-            return $result;
-        }else{
-            return null;
-        }                 
-    }
-
-    public function findAllByClient($id_client,$param)
-    {
-     
-        $result =  $this->db->select('*')
-                        ->from($this->table)
-                        ->order_by('num_contrat', 'desc')
-                        ->where("id_client", $id_client)
+                        ->order_by('id', 'asc')
                         ->get()
                         ->result();
         if($result)
@@ -98,5 +78,30 @@ class Contrat_model extends CI_Model
         }
         return null;
     }
+
+    public function findAllByMission($id_mission)
+    {
+              
+        
+        $requete="SELECT m.id,m.grand_tache,m.nbre_heure,m.id_mission  FROM "
+          ."prev_tache as m "
+          ." where m.id_mission=".$id_mission;
+          
+         
+          $query= $this->db->query($requete);
+          if( $query)
+          {
+          return $query->result();
+          }else
+          {
+              return null;
+          }
+
+
+
+
+
+    }
+
 
 }

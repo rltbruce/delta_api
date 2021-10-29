@@ -47,10 +47,11 @@ class Contrat extends REST_Controller {
 
        // $data = $this->DeboursManager->findAll();
        $idcl=$this->get('idcl');
+       $idparam=$this->get('parametre');
         if($idcl)
         {
             
-            $menu = $this->DeboursManager->findAllByClient($idcl);
+            $menu = $this->DeboursManager->findAllByClient($idcl,$idparam);
                 if ($menu) {
                     foreach ($menu as $key => $value) {
                        
@@ -60,7 +61,10 @@ class Contrat extends REST_Controller {
                         $data[$key]['id_client'] = $value->id_client;
                         $data[$key]['montant_ht'] = $value->montant_ht;
                         $data[$key]['monnaie'] = $value->monnaie;
-                        $mission = $this->MissionManager->findAllByClient($value->id);
+                        $data[$key]['libelle'] = $value->libelle;
+                        $data[$key]['date_debut'] = $value->date_debut;
+                        $data[$key]['date_fin'] = $value->date_fin;
+                        $mission = $this->MissionManager->findAllByClient($value->id,$idparam);
                         if($mission)
                         {
                         $data[$key]['mission']=$mission;
@@ -117,6 +121,8 @@ class Contrat extends REST_Controller {
        
         $supprimer = $this->post('supprimer') ;
         $datecontrat = $this->convertDateAngular($this->post('date_contrat'));
+        $datedebut = $this->convertDateAngular($this->post('date_debut'));
+        $datefin = $this->convertDateAngular($this->post('date_fin'));
         if ($supprimer == 0) {
             if ($id == 0) {
                 $data = array(
@@ -124,7 +130,10 @@ class Contrat extends REST_Controller {
                     'date_contrat' => $datecontrat,
                     'id_client' => $this->post('id_client'),
                     'montant_ht' => intval($this->post('montant_ht')),
-                    'monnaie' => $this->post('monnaie')
+                    'monnaie' => $this->post('monnaie'),
+                    'libelle' => $this->post('libelle'),
+                    'date_debut' => $datedebut,
+                    'date_fin' => $datefin,
                   
                 );
                 if (!$data) {
@@ -155,7 +164,10 @@ class Contrat extends REST_Controller {
                     'date_contrat' => $datecontrat,
                     'id_client' => $this->post('id_client'),
                     'montant_ht' => intval($this->post('montant_ht')),
-                    'monnaie' => $this->post('monnaie')
+                    'monnaie' => $this->post('monnaie'),
+                    'libelle' => $this->post('libelle'),
+                    'date_debut' => $datedebut,
+                    'date_fin' => $datefin,
                   
 
                 );

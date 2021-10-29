@@ -5,12 +5,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 // afaka fafana refa ts ilaina
 require APPPATH . '/libraries/REST_Controller.php';
 
-class Mission extends REST_Controller {
+class Detaildebours extends REST_Controller {
 
     public function __construct() {
         parent::__construct();
-        $this->load->model('mission_model', 'DeboursManager');
-        $this->load->model('mission_model', 'MissionManager');
+        $this->load->model('detaildebours_model', 'DeboursManager');
+        $this->load->model('personnel_model', 'PersonnelManager');
+        $this->load->model('region_model', 'RegionManager');
         header('Access-Control-Allow-Origin: *');
         header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
@@ -20,22 +21,6 @@ class Mission extends REST_Controller {
         }
       //  $this->load->model('typeindicateur_model', 'Type_indicateurManager');
     }
-    public function convertDateAngular($daty){
-		if(isset($daty) && $daty != ""){
-			if(strlen($daty) >33) {
-				$daty=substr($daty,0,33);
-			}
-			$xx  = new DateTime($daty);
-			if($xx->getTimezone()->getName() == "Z"){
-				$xx->add(new DateInterval("P1D"));
-				return $xx->format("Y-m-d");
-			}else{
-				return $xx->format("Y-m-d");
-			}
-		}else{
-			return null;
-		}
-	}
     public function index_get() {
         $id = $this->get('id');
 		//$typeindicateur_id=$this->get('typeindicateur_id');
@@ -43,22 +28,39 @@ class Mission extends REST_Controller {
         $data = array();
         
         $idcl=$this->get('idcl');
-        $idparam=$this->get('parametre');
        
         if($idcl )
         {
             
-            $menu = $this->DeboursManager->findAllByClient($idcl,$idparam);
+            $menu = $this->DeboursManager->findAllByDemande($idcl);
                 if ($menu) {
                     foreach ($menu as $key => $value) {
-                       
+                        $pers = $this->PersonnelManager->findById($value->id_pers);
+                        $reg = $this->RegionManager->findById($value->id_region);
                         $data[$key]['id'] = $value->id;
-                        $data[$key]['code'] = $value->code;
-                        $data[$key]['libelle'] = $value->libelle;
-                        $data[$key]['associe_resp'] = $value->associe_resp;
-                        $data[$key]['senior_manager'] = $value->senior_manager;
-                        $data[$key]['chef_mission'] = $value->chef_mission;
-                        $data[$key]['nom_client'] = $value->nom_client;
+                        $data[$key]['id_debours'] = $value->id_debours;
+                        $data[$key]['libdebours'] = $value->libdebours;
+                        $data[$key]['id_pers'] = $value->id_pers;
+                        $data[$key]['id_demande'] = $value->id_demande;
+                        $data[$key]['nbre_jours'] = $value->nbre_jours;
+                        $data[$key]['nbre_heure'] = $value->nbre_heure;
+                        $data[$key]['pu'] = $value->pu;
+                        $data[$key]['date_debut'] = $value->date_debut;
+                        $data[$key]['date_fin'] = $value->date_fin;
+                        $data[$key]['id_region'] = $value->id_region;
+                        $data[$key]['localite'] = $value->localite;
+                        $data[$key]['montant'] = $value->montant;
+                        $data[$key]['id_grade'] = $value->id_grade;
+                        $data[$key]['montant_retourne'] = $value->montant_retourne;
+                        $data[$key]['explication'] = $value->explication;
+                        $data[$key]['nompersonnel'] = $pers->nom;
+                        $data[$key]['nomregion'] = $reg->libelle;
+                     
+
+
+                        //Mission
+
+                        //fin mission
 
                     }
                 }        
@@ -71,12 +73,22 @@ class Mission extends REST_Controller {
 			$debours = $this->DeboursManager->findById($id);
 			//$type_indicateur = $this->Type_indicateurManager->findById($indicateur->type_indicateur_id);
             $data[$key]['id'] = $value->id;
-            $data[$key]['code'] = $value->code;
-            $data[$key]['libelle'] = $value->libelle;
-            $data[$key]['associe_resp'] = $value->associe_resp;
-            $data[$key]['senior_manager'] = $value->senior_manager;
-            $data[$key]['chef_mission'] = $value->chef_mission;
-           
+            $data[$key]['id_debours'] = $value->id_debours;
+            $data[$key]['id_pers'] = $value->id_pers;
+            $data[$key]['id_demande'] = $value->id_demande;
+            $data[$key]['nbre_jours'] = $value->nbre_jours;
+            $data[$key]['nbre_heure'] = $value->nbre_heure;
+            $data[$key]['pu'] = $value->pu;
+            $data[$key]['date_debut'] = $value->date_debut;
+            $data[$key]['date_fin'] = $value->date_fin;
+            $data[$key]['id_region'] = $value->id_region;
+            $data[$key]['localite'] = $value->localite;
+            $data[$key]['montant'] = $value->montant;
+            $data[$key]['id_grade'] = $value->id_grade;
+            $data[$key]['montant_retourne'] = $value->montant_retourne;
+            $data[$key]['explication'] = $value->explication;
+         
+            
 		
         } 
         
@@ -103,23 +115,25 @@ class Mission extends REST_Controller {
         $id = $this->post('id') ;
        
         $supprimer = $this->post('supprimer') ;
-        $datedeb = $this->convertDateAngular($this->post('date_deb_prevue'));
-        $datefin = $this->convertDateAngular($this->post('date_fin_prevue'));
+      
         if ($supprimer == 0) {
             if ($id == 0) {
                 $data = array(
-                    'code' => $this->post('code'),
-                    'libelle' => $this->post('libelle'),
-                    'associe_resp' => $this->post('associe_resp'),
-                    'associate_director' => $this->post('associate_director'),
-                    'director' => $this->post('director'),
-                    'senior_manager' => $this->post('senior_manager'),
-                    'chef_mission' => $this->post('chef_mission'),
-                    'produit' => $this->post('produit'),
-                    'id_contrat' => $this->post('id_contrat'),
-                    'date_deb_prevue' => $datedeb,
-                    'date_fin_prevue' => $datefin
-                
+                    'id_debours' => $this->post('id_debours'),
+                    'id_pers' => $this->post('id_pers'),
+                    'id_demande' => $this->post('id_demande'),
+                    'nbre_jours' => $this->post('nbre_jours'),
+                    'nbre_heure' => $this->post('nbre_heure'),
+                    'pu' => $this->post('pu'),
+                    'date_debut' => $this->post('date_debut'),
+                    'date_fin' => $this->post('date_fin'),
+                    'id_region' => $this->post('id_region'),
+                    'localite' => $this->post('localite'),
+                    'montant' => $this->post('montant'),
+                    'id_grade' => $this->post('id_grade'),
+                    'montant_retourne' => $this->post('montant_retourne'),
+                    'explication' => $this->post('explication')
+                 
                   
                 );
                 if (!$data) {
@@ -146,19 +160,20 @@ class Mission extends REST_Controller {
             } else {
                 
                 $data = array(
-                    'code' => $this->post('code'),
-                    'libelle' => $this->post('libelle'),
-                    'associe_resp' => $this->post('associe_resp'),
-                    'associate_director' => $this->post('associate_director'),
-                    'director' => $this->post('director'),
-                    'senior_manager' => $this->post('senior_manager'),
-                    'chef_mission' => $this->post('chef_mission'),
-                    'produit' => $this->post('produit'),
-                    'id_contrat' => $this->post('id_contrat'),
-                    'date_deb_prevue' => $datedeb,
-                    'date_fin_prevue' => $datefin
-                
-                
+                    'id_debours' => $this->post('id_debours'),
+                    'id_pers' => $this->post('id_pers'),
+                    'id_demande' => $this->post('id_demande'),
+                    'nbre_jours' => $this->post('nbre_jours'),
+                    'nbre_heure' => $this->post('nbre_heure'),
+                    'pu' => $this->post('pu'),
+                    'date_debut' => $this->post('date_debut'),
+                    'date_fin' => $this->post('date_fin'),
+                    'id_region' => $this->post('id_region'),
+                    'localite' => $this->post('localite'),
+                    'montant' => $this->post('montant'),
+                    'id_grade' => $this->post('id_grade'),
+                    'montant_retourne' => $this->post('montant_retourne'),
+                    'explication' => $this->post('explication')
                 
                    
                   

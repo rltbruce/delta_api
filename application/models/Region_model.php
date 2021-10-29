@@ -35,8 +35,8 @@ class Region_model extends CI_Model
     {
         return array(
             'code'       =>      $region['code'],
-            'nom'        =>      $region['nom'],
-            'id_pays'     =>      $region['id_pays']                       
+            'libelle'        =>      $region['libelle']
+            
         );
     }
 
@@ -56,7 +56,7 @@ class Region_model extends CI_Model
     {
         $result =  $this->db->select('*')
                         ->from($this->table)
-                        ->order_by('nom')
+                        ->order_by('libelle')
                         ->get()
                         ->result();
         if($result)

@@ -1,8 +1,8 @@
 <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Contrat_model extends CI_Model
+class Echeancepaiement_model extends CI_Model
 {
-    protected $table = 'contrat';
+    protected $table = 'echeance_paiement';
 
 
     public function add($client)
@@ -34,14 +34,15 @@ class Contrat_model extends CI_Model
     public function _set($client)
     {
         return array(
-            'num_contrat'                  =>      $client['num_contrat'],
-            'date_contrat'               =>      $client['date_contrat'],
-            'id_client'               =>      $client['id_client'],
-            'montant_ht'               =>      $client['montant_ht'],
-            'monnaie'               =>      $client['monnaie'],
-            'libelle'               =>      $client['libelle'],           
-            'date_debut'               =>      $client['date_debut'],           
-            'date_fin'               =>      $client['date_fin'],                      
+            'libelle'                  =>      $client['libelle'],
+            'pourcentage'               =>      $client['pourcentage'],
+            'date_facture'               =>      $client['date_facture'],
+            'id_mission'               =>      $client['id_mission'],
+            'date_em_facture'               =>      $client['date_em_facture'],   
+            'num_facture'               =>      $client['num_facture'],   
+            'montant_facture'               =>      $client['montant_facture'], 
+            'date_saisie'               =>      $client['date_saisie'],    
+            'nbre_jours'               =>      $client['nbre_jours'],                                                                      
         );
     }
 
@@ -61,7 +62,7 @@ class Contrat_model extends CI_Model
     {
         $result =  $this->db->select('*')
                         ->from($this->table)
-                        ->order_by('num_contrat', 'asc')
+                        ->order_by('id', 'asc')
                         ->get()
                         ->result();
         if($result)
@@ -77,8 +78,8 @@ class Contrat_model extends CI_Model
      
         $result =  $this->db->select('*')
                         ->from($this->table)
-                        ->order_by('num_contrat', 'desc')
-                        ->where("id_client", $id_client)
+                        ->order_by('id', 'desc')
+                        ->where("id_mission", $id_client)
                         ->get()
                         ->result();
         if($result)
@@ -87,6 +88,31 @@ class Contrat_model extends CI_Model
         }else{
             return null;
         }                 
+    }
+
+    public function findAllByMission($id_mission)
+    {
+              
+        
+        $requete="SELECT m.id,m.libelle,m.pourcentage,m.date_facture,m.id_mission,m.date_em_facture,m.num_facture,"
+        ."m.montant_facture,m.date_saisie,nbre_jours  FROM "
+          ."echeance_paiement as m "
+          ." where m.id_mission=".$id_mission;
+          
+         
+          $query= $this->db->query($requete);
+          if( $query)
+          {
+          return $query->result();
+          }else
+          {
+              return null;
+          }
+
+
+
+
+
     }
 
     public function findById($id)

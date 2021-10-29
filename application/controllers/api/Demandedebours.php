@@ -5,12 +5,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 // afaka fafana refa ts ilaina
 require APPPATH . '/libraries/REST_Controller.php';
 
-class Mission extends REST_Controller {
+class Demandedebours extends REST_Controller {
 
     public function __construct() {
         parent::__construct();
-        $this->load->model('mission_model', 'DeboursManager');
-        $this->load->model('mission_model', 'MissionManager');
+        $this->load->model('demandedeb_model', 'DeboursManager');
+        $this->load->model('detaildebours_model', 'DetailManager');
         header('Access-Control-Allow-Origin: *');
         header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
@@ -43,22 +43,36 @@ class Mission extends REST_Controller {
         $data = array();
         
         $idcl=$this->get('idcl');
-        $idparam=$this->get('parametre');
-       
+        $param='mission';
         if($idcl )
         {
             
-            $menu = $this->DeboursManager->findAllByClient($idcl,$idparam);
+            $menu = $this->DeboursManager->findAllByMission($idcl,$param);
                 if ($menu) {
                     foreach ($menu as $key => $value) {
                        
                         $data[$key]['id'] = $value->id;
-                        $data[$key]['code'] = $value->code;
+                        $data[$key]['num_demande'] = $value->num_demande;
+                        $data[$key]['date_demande'] = $value->date_demande;
+                        $data[$key]['id_mission'] = $value->id_mission;
+                        $data[$key]['id_demandeur'] = $value->id_demandeur;
                         $data[$key]['libelle'] = $value->libelle;
-                        $data[$key]['associe_resp'] = $value->associe_resp;
-                        $data[$key]['senior_manager'] = $value->senior_manager;
-                        $data[$key]['chef_mission'] = $value->chef_mission;
                         $data[$key]['nom_client'] = $value->nom_client;
+                        $data[$key]['nombre'] = $value->nombre;
+                        $data[$key]['nompersonnel'] = $value->nom;
+                       /* $detail = $this->DetailManager->findAllByDemande($value->id);
+                        if($detail)
+                        {
+                        $data[$key]['detail']=$detail;
+                        }else
+                        {
+                            $data[$key]['detail']=array();
+                        }*/
+
+
+                        //Mission
+
+                        //fin mission
 
                     }
                 }        
@@ -71,12 +85,12 @@ class Mission extends REST_Controller {
 			$debours = $this->DeboursManager->findById($id);
 			//$type_indicateur = $this->Type_indicateurManager->findById($indicateur->type_indicateur_id);
             $data[$key]['id'] = $value->id;
-            $data[$key]['code'] = $value->code;
-            $data[$key]['libelle'] = $value->libelle;
-            $data[$key]['associe_resp'] = $value->associe_resp;
-            $data[$key]['senior_manager'] = $value->senior_manager;
-            $data[$key]['chef_mission'] = $value->chef_mission;
-           
+            $data[$key]['num_demande'] = $value->num_demande;
+            $data[$key]['date_demande'] = $value->date_demande;
+            $data[$key]['id_mission'] = $value->id_mission;
+            $data[$key]['id_demandeur'] = $value->id_demandeur;
+            $data[$key]['nombre'] = $value->nombre;
+            
 		
         } 
         
@@ -103,23 +117,25 @@ class Mission extends REST_Controller {
         $id = $this->post('id') ;
        
         $supprimer = $this->post('supprimer') ;
-        $datedeb = $this->convertDateAngular($this->post('date_deb_prevue'));
-        $datefin = $this->convertDateAngular($this->post('date_fin_prevue'));
+        $datecontrat = $this->convertDateAngular($this->post('date_demande'));
         if ($supprimer == 0) {
             if ($id == 0) {
                 $data = array(
-                    'code' => $this->post('code'),
-                    'libelle' => $this->post('libelle'),
-                    'associe_resp' => $this->post('associe_resp'),
-                    'associate_director' => $this->post('associate_director'),
-                    'director' => $this->post('director'),
-                    'senior_manager' => $this->post('senior_manager'),
-                    'chef_mission' => $this->post('chef_mission'),
-                    'produit' => $this->post('produit'),
-                    'id_contrat' => $this->post('id_contrat'),
-                    'date_deb_prevue' => $datedeb,
-                    'date_fin_prevue' => $datefin
-                
+                    'num_demande' => $this->post('num_demande'),
+                    'date_demande' =>  $datecontrat,
+                    'id_mission' => $this->post('id_mission'),
+                    'id_demandeur' => $this->post('id_demandeur'),
+                    'nombre' => $this->post('nombre'),
+                    'visa' => $this->post('visa'),
+                    'date_visa' => $this->post('date_visa'),
+                    'id_user' => $this->post('id_user'),
+                    'date_paiement' => $this->post('date_paiement'),
+                    'personne_visa' => $this->post('personne_visa'),
+                    'date_autorisation' => $this->post('date_autorisation'),
+                    'personne_permis' => $this->post('personne_permis'),
+                    'personne_paiement' => $this->post('personne_paiement'),
+                    'annuler' => $this->post('annuler'),
+                 
                   
                 );
                 if (!$data) {
@@ -146,19 +162,20 @@ class Mission extends REST_Controller {
             } else {
                 
                 $data = array(
-                    'code' => $this->post('code'),
-                    'libelle' => $this->post('libelle'),
-                    'associe_resp' => $this->post('associe_resp'),
-                    'associate_director' => $this->post('associate_director'),
-                    'director' => $this->post('director'),
-                    'senior_manager' => $this->post('senior_manager'),
-                    'chef_mission' => $this->post('chef_mission'),
-                    'produit' => $this->post('produit'),
-                    'id_contrat' => $this->post('id_contrat'),
-                    'date_deb_prevue' => $datedeb,
-                    'date_fin_prevue' => $datefin
-                
-                
+                    'num_demande' => $this->post('num_demande'),
+                    'date_demande' =>  $datecontrat,
+                    'id_mission' => $this->post('id_mission'),
+                    'id_demandeur' => $this->post('id_demandeur'),
+                 /*   'nombre' => $this->post('nombre'),
+                    'visa' => $this->post('visa'),
+                    'date_visa' => $this->post('date_visa'),
+                    'id_user' => $this->post('id_user'),
+                    'date_paiement' => $this->post('date_paiement'),
+                    'personne_visa' => $this->post('personne_visa'),
+                    'date_autorisation' => $this->post('date_autorisation'),
+                    'personne_permis' => $this->post('personne_permis'),
+                    'personne_paiement' => $this->post('personne_paiement'),
+                    'annuler' => $this->post('annuler'),*/
                 
                    
                   

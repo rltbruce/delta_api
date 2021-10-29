@@ -49,6 +49,7 @@ class Prevhonoraire extends REST_Controller {
                         $data[$key]['nbre_homme'] = $value->nbre_homme;
                         $data[$key]['pu'] = $value->pu;
                         $data[$key]['id_mission'] = $value->id_mission;
+                        $data[$key]['edit'] = false;
                         $data[$key]['libgrade']=$grade->libelle;
                     }
                 }        
@@ -75,10 +76,12 @@ class Prevhonoraire extends REST_Controller {
         if ($supprimer == 0) {
             if ($id == 0) {
                 $data = array(
-                    'code' => $this->post('code'),
-                    'nom' => $this->post('nom'),
-                    'telephone' => $this->post('telephone'),
-                    'grade' => $this->post('grade')
+                    'nbre_jour' => $this->post('nbre_jour'),
+                    'nbre_homme' => $this->post('nbre_homme'),
+                    'nbre_heure' => $this->post('nbre_heure'),
+                    'grade' => $this->post('grade'),
+                    'id_mission' => $this->post('id_mission'),
+                    'pu' => $this->post('pu')
                   
                 );
                 if (!$data) {
@@ -105,10 +108,12 @@ class Prevhonoraire extends REST_Controller {
             } else {
                 
                 $data = array(
-                    'code' => $this->post('code'),
-                    'nom' => $this->post('nom'),
-                    'telephone' => $this->post('telephone'),
-                    'grade' => $this->post('grade')
+                    'nbre_jour' => $this->post('nbre_jour'),
+                    'nbre_homme' => $this->post('nbre_homme'),
+                    'nbre_heure' => $this->post('nbre_heure'),
+                    'grade' => $this->post('grade'),
+                    'id_mission' => $this->post('id_mission'),
+                    'pu' => intval($this->post('pu'))
                   
 
                 );

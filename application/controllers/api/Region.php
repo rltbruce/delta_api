@@ -10,40 +10,33 @@ class Region extends REST_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->model('region_model', 'RegionManager');
-        $this->load->model('pays_model', 'PaysManager');
+        header('Access-Control-Allow-Origin: *');
+        header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+        $method = $_SERVER['REQUEST_METHOD'];
+        if ($method == "OPTIONS") {
+            die();
+        }
+      //  $this->load->model('typeindicateur_model', 'Type_indicateurManager');
     }
 
     public function index_get() {
-        $id = $this->get('id'); 
-           
-            if ($id) {
-                $data = array();
-                $region = $this->RegionManager->findById($id);
-                $pays = $this->PaysManager->findById($region->id_pays);
-                $data['id'] = $region->id;
-                $data['code'] = $region->code;
-                $data['nom'] = $region->nom;
-                $data['pays'] = $pays;
-            }  /*
-            else {
-                $menu = $this->RegionManager->findAll();
-                if ($menu) {
-                    foreach ($menu as $key => $value) {
-                        $pays = array();
-                        $pays = $this->PaysManager->findById($value->id_pays);
-                        $data[$key]['id'] = $value->id;
-                        $data[$key]['code'] = $value->code;
-                        $data[$key]['nom'] = $value->nom;
-                        $data[$key]['pays'] = $pays;
-                    }
-                } else
-                    $data = array();
-            }
-            */
+        $id = $this->get('id');
+		//$typeindicateur_id=$this->get('typeindicateur_id');
+		$code=$this->get('code');
+		$data = array();
+		if ($id) {
+			$debours = $this->RegionManager->findById($id);
+			//$type_indicateur = $this->Type_indicateurManager->findById($indicateur->type_indicateur_id);
+			$data['id'] = $debours->id;
+			$data['code'] = $debours->code;
+			$data['libelle'] = $debours->libelle;
+			
+		
+		} else{
+				$data = $this->RegionManager->findAll();
 
-           else {
-               $data = $this->RegionManager->findAll();     
-            }
+		}
         if (count($data)>0) {
             $this->response([
                 'status' => TRUE,
@@ -65,8 +58,8 @@ class Region extends REST_Controller {
             if ($id == 0) {
                 $data = array(
                     'code' => $this->post('code'),
-                    'nom' => $this->post('nom'),
-                    'id_pays' => $this->post('pays_id')
+                    'libelle' => $this->post('libelle'),
+                  
                 );
                 if (!$data) {
                     $this->response([
@@ -92,8 +85,8 @@ class Region extends REST_Controller {
             } else {
                 $data = array(
                     'code' => $this->post('code'),
-                    'nom' => $this->post('nom'),
-                    'id_pays' => $this->post('pays_id')
+                    'libelle' => $this->post('libelle'),
+                 
                 );
                 if (!$data || !$id) {
                     $this->response([
