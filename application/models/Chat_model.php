@@ -7,7 +7,7 @@ class Chat_model extends CI_Model
 
     public function add($chat)
     {
-        $this->db->set($this->_set($chat))
+        $this->db->set($this->_set_add($chat))
                 ->set('date', 'NOW()', false)
                             ->insert($this->table);
         if($this->db->affected_rows() === 1)
@@ -58,6 +58,34 @@ class Chat_model extends CI_Model
             );
         }
     }
+    public function _set_add($chat)
+    {   
+        if ($chat['repertoire']!='' && $chat['repertoire']!='undefined')
+        {            
+            return array(
+
+                'message'  =>  $chat['message'],
+                //'date'     =>  $chat['date'],
+                'id_send'  =>  $chat['id_send'],
+                'id_receive'=>  $chat['id_receive'],
+                'repertoire'=>  $chat['repertoire'],
+                'pas_supprimer'=>  $chat['pas_supprimer'],
+                'vue'=>  $chat['vue']
+            );
+        }
+        else
+        {
+            return array(
+
+                'message'  =>  $chat['message'],
+                //'date'     =>  $chat['date'],
+                'id_send'  =>  $chat['id_send'],
+                'id_receive'=>  $chat['id_receive'],
+                'pas_supprimer'=>  $chat['pas_supprimer'],
+                'vue'=>  $chat['vue']
+            );
+        }
+    }
 
 
     public function delete($id)
@@ -78,7 +106,11 @@ class Chat_model extends CI_Model
     }
 
     public function getmessageBydiscution($id_pesonnel_autre,$id_pesonnel_moi)
-    {
+    {   
+        $this->db->set(array('vue'=>1))
+                            ->where('id_send', (int) $id_pesonnel_autre)
+                            ->where('id_receive', (int) $id_pesonnel_moi)
+                            ->update($this->table);
         $sql=" 
 
                 select detail.id as id, 
@@ -152,6 +184,21 @@ class Chat_model extends CI_Model
     public function getmaxidchat()
     {
         $requete="select max(cha.id) as id from chat as cha"; 
+		return $this->db->query($requete)->result();                 
+    }
+    public function getnumbermessagechatpasvu($id_user)
+    {
+        $requete="select count(cha.id) as nbr from chat as cha 
+                    inner join utilisateur on utilisateur.id_pers=cha.id_receive 
+                    where utilisateur.id=".$id_user." and vue=0"; 
+		return $this->db->query($requete)->result();                 
+    }
+    public function getnumbermessagechatpasvubyuser($id_user_moi,$id_user_autre)
+    {
+        $requete="select count(cha.id) as nbr from chat as cha 
+                    inner join utilisateur as util_send on util_send.id_pers=cha.id_send
+                    inner join utilisateur as util_receive on util_receive.id_pers=cha.id_receive  
+                    where util_send.id=".$id_user_autre." and util_receive.id=".$id_user_moi." and vue=0"; 
 		return $this->db->query($requete)->result();                 
     }
       

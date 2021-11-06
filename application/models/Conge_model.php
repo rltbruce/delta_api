@@ -219,7 +219,7 @@ class Conge_model extends CI_Model {
                     from absence as abse            
             
                         where abse.id_personnel_absent = ".$id_personnel." 
-                            and cong.validation!=2
+                            and abse.validation!=2
                             and '".$date_cherche."' between abse.date_debut and abse.date_fin 
             
                         group by abse.id ) detail

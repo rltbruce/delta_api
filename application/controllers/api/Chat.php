@@ -24,11 +24,30 @@ class Chat extends REST_Controller {
         $menu = $this->get('menu');
         $id_pesonnel_autre = $this->get('id_pesonnel_autre'); 
         $id_pesonnel_moi = $this->get('id_pesonnel_moi');
+        $id_user_autre = $this->get('id_user_autre'); 
+        $id_user_moi = $this->get('id_user_moi');
+        $id_user = $this->get('id_user');
         $data=array();
 
         if ($menu=='getmaxidchat')
         {
              $tmp = $this->ChatManager->getmaxidchat(); 
+             if ($tmp)
+             {
+                 $data=$tmp;
+             }
+         }
+         if ($menu=='getnumbermessagechatpasvu')
+        {
+             $tmp = $this->ChatManager->getnumbermessagechatpasvu($id_user); 
+             if ($tmp)
+             {
+                 $data=$tmp;
+             }
+         }
+         if ($menu=='getnumbermessagechatpasvubyuser')
+        {
+             $tmp = $this->ChatManager->getnumbermessagechatpasvubyuser($id_user_moi,$id_user_autre); 
              if ($tmp)
              {
                  $data=$tmp;
@@ -53,14 +72,14 @@ class Chat extends REST_Controller {
                 }
             } 
 
-            if ($id)
+           /* if ($id)
             {
                 $data = array();
                 $document = $this->ChatManager->findById($id);
                 $data['id'] = $document->id;
                 $data['code'] = $document->code;
                 $data['nom'] = $document->nom;
-            }
+            }*/
             
 
             if ($menu=='findall')
@@ -111,7 +130,8 @@ class Chat extends REST_Controller {
                     'id_send'=>  $this->post('id_send'),
                     'id_receive'      =>  $this->post('id_receive'),
                     'repertoire'      =>  $this->post('repertoire'),
-                    'pas_supprimer'      =>  $this->post('pas_supprimer')
+                    'pas_supprimer'      =>  $this->post('pas_supprimer'),
+                    'vue'      =>  0
                 );
                 
                 if (!$data) {

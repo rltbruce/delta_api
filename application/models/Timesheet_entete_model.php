@@ -102,8 +102,8 @@ class Timesheet_entete_model extends CI_Model {
 
             from conge as cong            
     
-                where cong.date_retour <='".$date_fin."' or cong.date_retour >='".$date_fin."'
-                    and cong.date_debut >='".$date_debut."' 
+                where cong.date_retour between'".$date_debut."' and'".$date_fin."'
+                    or  cong.date_debut between'".$date_debut."' and'".$date_fin."' 
                     and cong.id_personnel_conge = ".$id_personnel." 
                     and cong.validation != 2 
                     and cong.date_retour is not null      
@@ -117,8 +117,8 @@ class Timesheet_entete_model extends CI_Model {
 
             from conge as cong            
     
-                where cong.date_fin <='".$date_fin."' or cong.date_fin >='".$date_fin."'
-                    and cong.date_debut >='".$date_debut."'  
+                where cong.date_fin between'".$date_debut."' and'".$date_fin."'
+                    or cong.date_debut between'".$date_debut."' and'".$date_fin."'  
                     and cong.id_personnel_conge = ".$id_personnel." 
                     and cong.validation != 2 
                     and cong.date_retour is null      
@@ -133,8 +133,8 @@ class Timesheet_entete_model extends CI_Model {
 
             from absence as abse            
     
-                where abse.date_fin <='".$date_fin."' or abse.date_fin >='".$date_fin."'
-                    and abse.date_debut >='".$date_debut."'
+                where abse.date_fin between'".$date_debut."' and'".$date_fin."'
+                    or abse.date_debut between'".$date_debut."' and'".$date_fin."'
                     and abse.validation != 2 
                     and abse.id_personnel_absent = ".$id_personnel." 
     
